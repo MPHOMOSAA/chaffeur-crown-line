@@ -1,5 +1,75 @@
 /* CROWN LINE CHAUFFEURS — script.js v3 */
 
+/* CUSTOM CAR CURSOR */
+(function(){
+  if(window.innerWidth<=768)return;
+  // Inject cursor elements
+  const carEl=document.createElement('div');
+  carEl.className='cursor-car';
+  carEl.innerHTML=`<svg viewBox="0 0 120 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="cglow">
+        <feGaussianBlur stdDeviation="2" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <path d="M8 34 Q14 24 28 18 Q44 13 62 13 Q80 12 94 18 Q108 24 116 30 L118 35 Q119 38 115 38 L104 38 Q100 46 92 46 Q84 46 80 38 L36 38 Q32 46 24 46 Q16 46 12 38 L8 37 Z" fill="#E8911A" filter="url(#cglow)"/>
+    <path d="M28 18 Q38 12 58 12 Q78 12 90 18" stroke="#F5C518" stroke-width="1.5" fill="none" opacity=".7"/>
+    <ellipse cx="26" cy="40" rx="7" ry="7" fill="#111"/>
+    <ellipse cx="26" cy="40" rx="5" ry="5" fill="#1a1a1a" stroke="#E8911A" stroke-width="1"/>
+    <ellipse cx="26" cy="40" rx="2" ry="2" fill="#E8911A"/>
+    <ellipse cx="90" cy="40" rx="7" ry="7" fill="#111"/>
+    <ellipse cx="90" cy="40" rx="5" ry="5" fill="#1a1a1a" stroke="#E8911A" stroke-width="1"/>
+    <ellipse cx="90" cy="40" rx="2" ry="2" fill="#E8911A"/>
+    <path d="M106 33 L115 32 L113 36 L104 37 Z" fill="#CC7A10" opacity=".5"/>
+  </svg>`;
+  carEl.style.cssText='position:fixed;top:0;left:0;z-index:9999;pointer-events:none;width:56px;height:28px;transform:translate(-50%,-50%);transition:transform .08s ease';
+
+  // Trail dots
+  const trails=[];
+  for(let i=0;i<5;i++){
+    const t=document.createElement('div');
+    t.style.cssText=`position:fixed;top:0;left:0;z-index:9998;pointer-events:none;width:${5-i}px;height:${5-i}px;border-radius:50%;background:radial-gradient(circle,#F5C518,#E8911A);opacity:0;transform:translate(-50%,-50%);transition:opacity .4s`;
+    trails.push({el:t,x:0,y:0});
+    document.body.appendChild(t);
+  }
+  document.body.appendChild(carEl);
+
+  let mx=innerWidth/2,my=innerHeight/2;
+  let lastAngle=0;
+
+  document.addEventListener('mousemove',e=>{
+    const dx=e.clientX-mx,dy=e.clientY-my;
+    mx=e.clientX;my=e.clientY;
+    const angle=Math.atan2(dy,dx)*180/Math.PI;
+    const tilt=Math.max(-15,Math.min(15,dx*0.3));
+    lastAngle=angle;
+    carEl.style.left=mx+'px';
+    carEl.style.top=my+'px';
+    carEl.style.transform=`translate(-50%,-50%) rotate(${tilt}deg)`;
+  });
+
+  // Trail animation
+  let trailPositions=Array(5).fill({x:innerWidth/2,y:innerHeight/2});
+  (function animTrail(){
+    trailPositions=[{x:mx,y:my},...trailPositions.slice(0,4)];
+    trails.forEach((t,i)=>{
+      const p=trailPositions[i];
+      t.el.style.left=p.x+'px';
+      t.el.style.top=p.y+'px';
+      t.el.style.opacity=(0.5-i*0.1).toString();
+    });
+    requestAnimationFrame(animTrail);
+  })();
+
+  // Hide on leave
+  document.addEventListener('mouseleave',()=>{carEl.style.opacity='0';trails.forEach(t=>t.el.style.opacity='0')});
+  document.addEventListener('mouseenter',()=>{carEl.style.opacity='1'});
+  // Scale on click
+  document.addEventListener('mousedown',()=>carEl.style.transform=`translate(-50%,-50%) scale(0.85)`);
+  document.addEventListener('mouseup',()=>carEl.style.transform=`translate(-50%,-50%) scale(1)`);
+})();
+
 // Car images — using diverse reliable sources
 const IMGS = {
   merc_s:   'https://images.unsplash.com/photo-1617469767524-7fd0f9f57fe9?w=800&auto=format&fit=crop&q=70',
